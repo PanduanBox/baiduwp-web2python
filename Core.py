@@ -1,5 +1,6 @@
 #-*- coding:utf-8 -*-
-#CREATER   :PanduanBoxTeam-NTGtech
+#CREATER:PanduanBoxTeam-NTGtech
+#Version:0.1
 
 from tkinter.constants import TRUE
 import requests
@@ -227,10 +228,14 @@ def view_dir():
     total('question_end','')
     return True
 
-def d_file():
+def d_file(inf):
     global processed_filePool
     global path_pool
     while total('question','') != False:
+        if path_pool == []:
+            len_ = len(processed_filePool)
+            while len_ > len(path_pool):
+                path_pool.append('\\')
         for single_pro_file,path_single in zip(processed_filePool,path_pool):
             if DEBUG == True:
                 print('\n循环中的file池:\n',processed_filePool,'\n')
@@ -256,6 +261,8 @@ def d_file():
             }
             url_Dl = url + '?download'
             get_download_link(url_Dl,single_pro_file,header,path_single)
+        if inf == 'S':
+            total('question_end','')
 
 def start(surl,pwd):
     data = {
@@ -299,10 +306,19 @@ def main_threading(surl,pwd):
         print('\n整理后的数据[第一次]\n',inf_dir_pool,'\n',inf_file_pool,'\n')
     total('input_file',inf_file_pool)
     total('input_dir',inf_dir_pool)
-    thread_dir = threading.Thread(target = view_dir)
-    thread_file = threading.Thread(target = d_file)
-    thread_dir.start()
-    thread_file.start()
+    if dir_pool == []:
+        if file_pool == []:
+            print('WARN:未获取到任何数据')
+        else:
+            total('question_start','')
+            print(total('question',''))
+            thread_file = threading.Thread(target = d_file, args = 'S')
+            thread_file.start()
+    else:
+        thread_dir = threading.Thread(target = view_dir)
+        thread_file = threading.Thread(target = d_file, args= 'T')
+        thread_dir.start()
+        thread_file.start()
 
 if __name__ == '__main__':
     #设置区
@@ -313,7 +329,7 @@ if __name__ == '__main__':
     #   file_inf_info-文件名称/MD5/大小/上传时间在html中的位置
     DEBUG = True
     DICT_VER = False
-    url = 'https://xxxxxx/'#你的网站
+    url = 'https://wp.ux5.net/'#你的网站
     type_dir = ['dir','pwd','share_id','uk','surl','randsk','sign','timestamp','bdstoken']
     type_file = ['fs_id','time','sign','randsk','share_id','uk','bdstoken','filesize']
     dir_info = '/html/body/div/div/ul/li/a/@href'
